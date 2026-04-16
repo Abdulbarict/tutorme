@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "135794065160",
+    "project_id": "tutorme-774ac",
+    "storage_bucket": "tutorme-774ac.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:135794065160:android:3098f4dc663a98843876bd",
+        "android_client_info": {
+          "package_name": "com.example.tutorme"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA49jgfYBk0q5AMyYMxA0cO6VdSkcW9ufs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
