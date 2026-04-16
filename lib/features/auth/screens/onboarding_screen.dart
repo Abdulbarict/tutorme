@@ -863,98 +863,40 @@ class _TrophyIllustration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 170,
+      height: 160,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // ── Bars (background, pushed down) ──────────────────────────────
+          // Bar chart bars behind trophy
           Positioned(
-            bottom: 10,
-            child: Transform.translate(
-              offset: const Offset(0, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
-                  _Bar(height: 60, label: 'Apr'),
-                  SizedBox(width: 10),
-                  _Bar(height: 85, label: 'May', isHighlight: true),
-                  SizedBox(width: 10),
-                  _Bar(height: 110, label: 'Jun', isHighlight: true),
-                ],
-              ),
+            bottom: 4,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _Bar(height: 60, label: 'Apr'),
+                const SizedBox(width: 10),
+                _Bar(height: 85, label: 'May', isHighlight: true),
+                const SizedBox(width: 10),
+                _Bar(height: 110, label: 'Jun', isHighlight: true),
+              ],
             ),
           ),
 
-          // ── Floating Trophy ──────────────────────────────────────────────
-          const _Float(
-            child: CustomPaint(
-              size: Size(86, 96),
-              painter: _TrophyPainter(),
-            ),
+          // Trophy outline (CustomPaint)
+          CustomPaint(
+            size: const Size(80, 90),
+            painter: _TrophyPainter(),
           ),
 
-          // ── Achievement badges ──────────────────────────────────────────
-          const Positioned(
-            top: 18,
-            left: 8,
+          // Badge circles
+          Positioned(
+            top: 8,
+            left: 20,
             child: _Badge(percent: '71%'),
           ),
-          const Positioned(
-            top: -6,
-            right: 8,
-            child: _Badge(percent: '92%', isGold: true),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TrophyIllustration extends StatelessWidget {
-  const _TrophyIllustration();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 170,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // ── Bars (background, pushed down) ──────────────────────────────
           Positioned(
-            bottom: 10,
-            child: Transform.translate(
-              offset: const Offset(0, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
-                  _Bar(height: 60, label: 'Apr'),
-                  SizedBox(width: 10),
-                  _Bar(height: 85, label: 'May', isHighlight: true),
-                  SizedBox(width: 10),
-                  _Bar(height: 110, label: 'Jun', isHighlight: true),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Floating Trophy ──────────────────────────────────────────────
-          const _Float(
-            child: CustomPaint(
-              size: Size(86, 96),
-              painter: _TrophyPainter(),
-            ),
-          ),
-
-          // ── Achievement badges ──────────────────────────────────────────
-          const Positioned(
-            top: 18,
-            left: 8,
-            child: _Badge(percent: '71%'),
-          ),
-          const Positioned(
-            top: -6,
-            right: 8,
+            top: 0,
+            right: 18,
             child: _Badge(percent: '92%', isGold: true),
           ),
         ],
@@ -979,34 +921,24 @@ class _Bar extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        TweenAnimationBuilder<double>(
-          duration: const Duration(milliseconds: 900),
-          curve: Curves.easeOutCubic,
-          tween: Tween(begin: 0, end: height),
-          builder: (_, value, __) {
-            return Container(
-              width: 22,
-              height: value,
+        Container(
+          width: 30,
+          height: height,
+          decoration: BoxDecoration(
+            color: AppColors.navy.withValues(alpha: isHighlight ? 1.0 : 0.35),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              height: 6,
               decoration: BoxDecoration(
-                color: AppColors.navy.withValues(
-                  alpha: isHighlight ? 0.55 : 0.22,
-                ),
-                borderRadius: BorderRadius.circular(4),
+                color: AppColors.gold,
+                borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(4)),
               ),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Container(
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: AppColors.gold,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
+            ),
+          ),
         ),
         const SizedBox(height: 4),
         Text(
@@ -1061,29 +993,24 @@ class _Badge extends StatelessWidget {
 class _TrophyPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
+    final paint = Paint()
       ..color = AppColors.gold
       ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fill = Paint()
-      ..color = AppColors.gold.withValues(alpha: 0.08)
-      ..style = PaintingStyle.fill;
-
     final w = size.width;
     final h = size.height;
 
+    // Cup body
     final cupPath = Path()
       ..moveTo(w * 0.18, h * 0.08)
       ..lineTo(w * 0.82, h * 0.08)
       ..lineTo(w * 0.75, h * 0.52)
       ..quadraticBezierTo(w * 0.5, h * 0.65, w * 0.25, h * 0.52)
       ..close();
-
-    canvas.drawPath(cupPath, fill);
-    canvas.drawPath(cupPath, stroke);
+    canvas.drawPath(cupPath, paint);
 
     // Handles
     canvas.drawArc(
@@ -1091,26 +1018,26 @@ class _TrophyPainter extends CustomPainter {
       math.pi / 2,
       math.pi,
       false,
-      stroke,
+      paint,
     );
     canvas.drawArc(
       Rect.fromLTWH(w * 0.75, h * 0.10, w * 0.25, h * 0.28),
       -math.pi / 2,
       math.pi,
       false,
-      stroke,
+      paint,
     );
 
     // Stem
     canvas.drawLine(
       Offset(w * 0.42, h * 0.63),
       Offset(w * 0.42, h * 0.82),
-      stroke,
+      paint,
     );
     canvas.drawLine(
       Offset(w * 0.58, h * 0.63),
       Offset(w * 0.58, h * 0.82),
-      stroke,
+      paint,
     );
 
     // Base
@@ -1122,22 +1049,29 @@ class _TrophyPainter extends CustomPainter {
         h * 0.92,
         const Radius.circular(4),
       ),
-      stroke,
+      paint,
     );
 
-    _drawStar(canvas, Offset(w * 0.5, h * 0.33), 12, stroke);
+    // Star in cup
+    _drawStar(canvas, Offset(w * 0.5, h * 0.33), 12, paint);
   }
 
-  void _drawStar(Canvas canvas, Offset c, double r, Paint p) {
+  void _drawStar(Canvas canvas, Offset center, double radius, Paint paint) {
     final path = Path();
     for (int i = 0; i < 5; i++) {
       final outer = Offset(
-        c.dx + r * math.cos((i * 4 * math.pi / 5) - math.pi / 2),
-        c.dy + r * math.sin((i * 4 * math.pi / 5) - math.pi / 2),
+        center.dx + radius * math.cos((i * 4 * math.pi / 5) - math.pi / 2),
+        center.dy + radius * math.sin((i * 4 * math.pi / 5) - math.pi / 2),
       );
       final inner = Offset(
-        c.dx + (r * 0.4) * math.cos(((i * 4 + 2) * math.pi / 5) - math.pi / 2),
-        c.dy + (r * 0.4) * math.sin(((i * 4 + 2) * math.pi / 5) - math.pi / 2),
+        center.dx +
+            (radius * 0.4) *
+                math.cos(
+                    ((i * 4 + 2) * math.pi / 5) - math.pi / 2),
+        center.dy +
+            (radius * 0.4) *
+                math.sin(
+                    ((i * 4 + 2) * math.pi / 5) - math.pi / 2),
       );
       if (i == 0) {
         path.moveTo(outer.dx, outer.dy);
@@ -1147,7 +1081,7 @@ class _TrophyPainter extends CustomPainter {
       path.lineTo(inner.dx, inner.dy);
     }
     path.close();
-    canvas.drawPath(path, p);
+    canvas.drawPath(path, paint);
   }
 
   @override

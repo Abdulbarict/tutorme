@@ -33,6 +33,7 @@ class AuthNavyBanner extends StatelessWidget {
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
         ),
       ),
       child: SafeArea(

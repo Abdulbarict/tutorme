@@ -44,7 +44,7 @@ class TutorMeApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'TutorMe',
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
       theme: AppTheme.light,
       routerConfig: router,
     );
