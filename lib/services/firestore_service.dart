@@ -75,6 +75,12 @@ class FirestoreService {
           .map((snap) =>
               snap.docs.map((d) => SubjectModel.fromFirestore(d)).toList());
 
+  Future<SubjectModel> getSubject(String subjectId) async {
+    final doc = await _subjects.doc(subjectId).get();
+    if (!doc.exists) throw Exception('Subject not found: $subjectId');
+    return SubjectModel.fromFirestore(doc);
+  }
+
   // ── Chapters ──────────────────────────────────────────────────────────────
 
   Future<List<ChapterModel>> getChapters(String subjectId) async {
@@ -187,6 +193,11 @@ FirestoreService firestoreService(Ref ref) {
 @riverpod
 Stream<List<SubjectModel>> subjects(Ref ref, CmaLevel level) =>
     ref.watch(firestoreServiceProvider).watchSubjects(level);
+
+/// Fetch single subject
+@riverpod
+Future<SubjectModel> subject(Ref ref, String subjectId) =>
+    ref.watch(firestoreServiceProvider).getSubject(subjectId);
 
 /// Watch chapters for a subject
 @riverpod
