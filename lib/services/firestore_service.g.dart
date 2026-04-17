@@ -202,6 +202,147 @@ class _SubjectsProviderElement
   CmaLevel get level => (origin as SubjectsProvider).level;
 }
 
+String _$subjectHash() => r'f3beae858f686c734b0e6416a1f7533775962869';
+
+/// Fetch single subject
+///
+/// Copied from [subject].
+@ProviderFor(subject)
+const subjectProvider = SubjectFamily();
+
+/// Fetch single subject
+///
+/// Copied from [subject].
+class SubjectFamily extends Family<AsyncValue<SubjectModel>> {
+  /// Fetch single subject
+  ///
+  /// Copied from [subject].
+  const SubjectFamily();
+
+  /// Fetch single subject
+  ///
+  /// Copied from [subject].
+  SubjectProvider call(
+    String subjectId,
+  ) {
+    return SubjectProvider(
+      subjectId,
+    );
+  }
+
+  @override
+  SubjectProvider getProviderOverride(
+    covariant SubjectProvider provider,
+  ) {
+    return call(
+      provider.subjectId,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'subjectProvider';
+}
+
+/// Fetch single subject
+///
+/// Copied from [subject].
+class SubjectProvider extends AutoDisposeFutureProvider<SubjectModel> {
+  /// Fetch single subject
+  ///
+  /// Copied from [subject].
+  SubjectProvider(
+    String subjectId,
+  ) : this._internal(
+          (ref) => subject(
+            ref as SubjectRef,
+            subjectId,
+          ),
+          from: subjectProvider,
+          name: r'subjectProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$subjectHash,
+          dependencies: SubjectFamily._dependencies,
+          allTransitiveDependencies: SubjectFamily._allTransitiveDependencies,
+          subjectId: subjectId,
+        );
+
+  SubjectProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.subjectId,
+  }) : super.internal();
+
+  final String subjectId;
+
+  @override
+  Override overrideWith(
+    FutureOr<SubjectModel> Function(SubjectRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: SubjectProvider._internal(
+        (ref) => create(ref as SubjectRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        subjectId: subjectId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<SubjectModel> createElement() {
+    return _SubjectProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SubjectProvider && other.subjectId == subjectId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, subjectId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin SubjectRef on AutoDisposeFutureProviderRef<SubjectModel> {
+  /// The parameter `subjectId` of this provider.
+  String get subjectId;
+}
+
+class _SubjectProviderElement
+    extends AutoDisposeFutureProviderElement<SubjectModel> with SubjectRef {
+  _SubjectProviderElement(super.provider);
+
+  @override
+  String get subjectId => (origin as SubjectProvider).subjectId;
+}
+
 String _$chaptersHash() => r'1f332c3ec5bb091e97b52a22d5b8c941f64362c7';
 
 /// Watch chapters for a subject

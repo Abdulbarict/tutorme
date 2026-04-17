@@ -7,7 +7,7 @@ part of 'home_providers.dart';
 // **************************************************************************
 
 String _$currentUserProfileHash() =>
-    r'8ca196de9be0abb38f3e4009b4ebf60e44e15a9a';
+    r'b4bd8d2de6b7a1d0a377e13f27f3895617f6f55f';
 
 /// See also [currentUserProfile].
 @ProviderFor(currentUserProfile)
@@ -25,7 +25,7 @@ final currentUserProfileProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef CurrentUserProfileRef = AutoDisposeStreamProviderRef<UserModel?>;
-String _$homeStatsHash() => r'4c52043ea12ce92acae63b1b27d18f3aa9effd50';
+String _$homeStatsHash() => r'cb3f176d85232dfe9999758d88777e26f0e1d418';
 
 /// See also [homeStats].
 @ProviderFor(homeStats)
