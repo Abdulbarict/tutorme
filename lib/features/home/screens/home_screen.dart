@@ -164,7 +164,7 @@ class _HomeHeader extends StatelessWidget {
           return _HeaderContent(
             firstName: firstName,
             level: 'CMA ${user.level.displayName}',
-            daysToExam: null,
+            daysToExam: user.daysToExam,
             initials: initials,
             hasNotifications: hasNotifications,
           );
@@ -563,9 +563,13 @@ class _StreakBanner extends StatelessWidget {
 // SECTION 4 — Quick Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _QuickActionsSection extends StatelessWidget {
+class _QuickActionsSection extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(currentUserProfileProvider);
+    final bookmarkCount = userAsync.valueOrNull?.bookmarkedQuestionIds.length ?? 0;
+    final bookmarkLabel = bookmarkCount == 0 ? 'None saved' : '$bookmarkCount saved';
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Column(
@@ -580,8 +584,8 @@ class _QuickActionsSection extends StatelessWidget {
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             childAspectRatio: 1.55,
-            children: const [
-              _QuickActionCard(
+            children: [
+              const _QuickActionCard(
                 id: 'qa_practice',
                 icon: Icons.menu_book_outlined,
                 iconBgColor: AppColors.navy,
@@ -590,7 +594,7 @@ class _QuickActionsSection extends StatelessWidget {
                 subtitle: 'No time pressure',
                 route: AppRoutes.practiceConfig,
               ),
-              _QuickActionCard(
+              const _QuickActionCard(
                 id: 'qa_test',
                 icon: Icons.timer_outlined,
                 iconBgColor: AppColors.gold,
@@ -605,11 +609,11 @@ class _QuickActionsSection extends StatelessWidget {
                 iconBgColor: AppColors.lightBlueTint,
                 iconColor: AppColors.navy,
                 title: 'Bookmarks',
-                subtitle: '12 saved',
-                subtitleHighlight: true,
+                subtitle: bookmarkLabel,
+                subtitleHighlight: bookmarkCount > 0,
                 route: AppRoutes.bookmarks,
               ),
-              _QuickActionCard(
+              const _QuickActionCard(
                 id: 'qa_progress',
                 icon: Icons.bar_chart_outlined,
                 iconBgColor: Color(0xFFE8F5EE),

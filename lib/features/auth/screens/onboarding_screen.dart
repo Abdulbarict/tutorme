@@ -69,9 +69,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               controller: _pageCtrl,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _Slide1(onNext: _onNext, onSkip: _onSkip, currentPage: _currentPage),
-                _Slide2(onNext: _onNext, onSkip: _onSkip, currentPage: _currentPage),
-                _Slide3(onNext: _onNext, onLoginTap: () => context.go(AppRoutes.login), currentPage: _currentPage),
+                _Slide1(onNext: _onNext, onSkip: _onSkip, currentPage: _currentPage, onDotTap: _goToPage),
+                _Slide2(onNext: _onNext, onSkip: _onSkip, currentPage: _currentPage, onDotTap: _goToPage),
+                _Slide3(onNext: _onNext, onLoginTap: () => context.go(AppRoutes.login), currentPage: _currentPage, onDotTap: _goToPage),
               ],
             ),
           ),
@@ -90,6 +90,7 @@ class _BottomNav extends StatelessWidget {
     required this.nextLabel,
     required this.nextVariant,
     this.belowButton,
+    this.onDotTap,
   });
 
   final int currentPage;
@@ -97,6 +98,7 @@ class _BottomNav extends StatelessWidget {
   final String nextLabel;
   final _ButtonVariant nextVariant;
   final Widget? belowButton;
+  final void Function(int)? onDotTap;
 
   @override
   Widget build(BuildContext context) {
@@ -105,19 +107,25 @@ class _BottomNav extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Dots
+          // Dots — tappable to jump to any slide
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(3, (i) {
               final active = i == currentPage;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: active ? 20 : 7,
-                height: active ? 7 : 7,
-                decoration: BoxDecoration(
-                  color: active ? AppColors.navy : AppColors.border,
-                  borderRadius: BorderRadius.circular(AppRadius.chip),
+              return GestureDetector(
+                onTap: onDotTap != null ? () => onDotTap!(i) : null,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: active ? 20 : 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: active ? AppColors.navy : AppColors.border,
+                      borderRadius: BorderRadius.circular(AppRadius.chip),
+                    ),
+                  ),
                 ),
               );
             }),
@@ -146,11 +154,13 @@ class _Slide1 extends StatelessWidget {
     required this.onNext,
     required this.onSkip,
     required this.currentPage,
+    required this.onDotTap,
   });
 
   final VoidCallback onNext;
   final VoidCallback onSkip;
   final int currentPage;
+  final void Function(int) onDotTap;
 
   @override
   Widget build(BuildContext context) {
@@ -254,6 +264,7 @@ class _Slide1 extends StatelessWidget {
               onNext: onNext,
               nextLabel: 'Next',
               nextVariant: _ButtonVariant.primary,
+              onDotTap: onDotTap,
             ),
           ],
         ),
@@ -269,11 +280,13 @@ class _Slide2 extends StatelessWidget {
     required this.onNext,
     required this.onSkip,
     required this.currentPage,
+    required this.onDotTap,
   });
 
   final VoidCallback onNext;
   final VoidCallback onSkip;
   final int currentPage;
+  final void Function(int) onDotTap;
 
   @override
   Widget build(BuildContext context) {
@@ -357,6 +370,7 @@ class _Slide2 extends StatelessWidget {
                   onNext: onNext,
                   nextLabel: 'Next',
                   nextVariant: _ButtonVariant.primary,
+                  onDotTap: onDotTap,
                 ),
               ],
             ),
@@ -374,11 +388,13 @@ class _Slide3 extends StatelessWidget {
     required this.onNext,
     required this.onLoginTap,
     required this.currentPage,
+    required this.onDotTap,
   });
 
   final VoidCallback onNext;
   final VoidCallback onLoginTap;
   final int currentPage;
+  final void Function(int) onDotTap;
 
   @override
   Widget build(BuildContext context) {
@@ -452,6 +468,7 @@ class _Slide3 extends StatelessWidget {
                   onNext: onNext,
                   nextLabel: 'Get Started',
                   nextVariant: _ButtonVariant.secondary,
+                  onDotTap: onDotTap,
                   belowButton: GestureDetector(
                     onTap: onLoginTap,
                     child: RichText(

@@ -22,6 +22,7 @@ class UserModel {
     required this.createdAt,
     this.photoUrl,
     this.phone,
+    this.examDate,
     this.bookmarkedQuestionIds = const [],
     this.practicedQuestionIds = const [],
     this.totalQuestionsAttempted = 0,
@@ -35,10 +36,21 @@ class UserModel {
   final DateTime createdAt;
   final String? photoUrl;
   final String? phone;
+
+  /// Optional target exam date — used to show "X days to exam" in the header.
+  final DateTime? examDate;
+
   final List<String> bookmarkedQuestionIds;
   final List<String> practicedQuestionIds;
   final int totalQuestionsAttempted;
   final int totalCorrect;
+
+  /// Days remaining until [examDate], or null if not set or already passed.
+  int? get daysToExam {
+    if (examDate == null) return null;
+    final diff = examDate!.difference(DateTime.now()).inDays;
+    return diff > 0 ? diff : null;
+  }
 
   // ── Firestore factory ─────────────────────────────────────────────────────
 
@@ -57,6 +69,9 @@ class UserModel {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       photoUrl: data['photoUrl'] as String?,
       phone: data['phone'] as String?,
+      examDate: data['examDate'] == null
+          ? null
+          : (data['examDate'] as Timestamp).toDate(),
       bookmarkedQuestionIds:
           List<String>.from(data['bookmarkedQuestionIds'] as List? ?? []),
       practicedQuestionIds:
@@ -76,6 +91,7 @@ class UserModel {
         'createdAt': Timestamp.fromDate(createdAt),
         'photoUrl': photoUrl,
         'phone': phone,
+        'examDate': examDate == null ? null : Timestamp.fromDate(examDate!),
         'bookmarkedQuestionIds': bookmarkedQuestionIds,
         'practicedQuestionIds': practicedQuestionIds,
         'totalQuestionsAttempted': totalQuestionsAttempted,
@@ -92,6 +108,7 @@ class UserModel {
     DateTime? createdAt,
     String? photoUrl,
     String? phone,
+    DateTime? examDate,
     List<String>? bookmarkedQuestionIds,
     List<String>? practicedQuestionIds,
     int? totalQuestionsAttempted,
@@ -105,6 +122,7 @@ class UserModel {
         createdAt: createdAt ?? this.createdAt,
         photoUrl: photoUrl ?? this.photoUrl,
         phone: phone ?? this.phone,
+        examDate: examDate ?? this.examDate,
         bookmarkedQuestionIds:
             bookmarkedQuestionIds ?? this.bookmarkedQuestionIds,
         practicedQuestionIds:
