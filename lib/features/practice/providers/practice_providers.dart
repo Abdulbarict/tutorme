@@ -5,7 +5,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../models/models.dart';
 import '../../../services/auth_service.dart';
-import '../../../services/firestore_service.dart';
 
 part 'practice_providers.g.dart';
 

@@ -8,7 +8,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../models/question_model.dart';
 import '../providers/practice_providers.dart';
-import '../screens/practice_config_screen.dart';
 import '../widgets/practice_session_widgets.dart';
 
 class PracticeSessionScreen extends ConsumerStatefulWidget {
@@ -224,7 +223,6 @@ class _PracticeSessionScreenState
       }
 
       final currentQ = state.currentQuestion!;
-      final isRevealed = state.isCurrentRevealed;
       final assessment = state.assessments[currentQ.id];
       final isAssessed = assessment != null;
       final isLast = state.currentIndex == state.questions.length - 1;

@@ -22,7 +22,7 @@ class _PracticeConfigScreenState extends ConsumerState<PracticeConfigScreen> {
   Set<String> _selectedChapterIds = {};
   PracticeFilter _selectedFilter = PracticeFilter.all;
   bool _shuffle = false;
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   void _onSubjectChanged(SubjectModel? subject) {
     if (subject == null || _selectedSubject?.id == subject.id) return;
@@ -100,6 +100,7 @@ class _PracticeConfigScreenState extends ConsumerState<PracticeConfigScreen> {
             const SizedBox(height: 8),
             subjectsAsync.when(
               data: (subjects) => DropdownButtonFormField<SubjectModel>(
+                // ignore: deprecated_member_use
                 value: _selectedSubject,
                 decoration: InputDecoration(
                   filled: true,
@@ -165,7 +166,7 @@ class _PracticeConfigScreenState extends ConsumerState<PracticeConfigScreen> {
                           child: Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: (chapters as List<ChapterModel>).map((ChapterModel c) {
+                            children: chapters.map((ChapterModel c) {
                               final isSelected = _selectedChapterIds.contains(c.id);
                               return FilterChip(
                                 label: Text(c.name),
@@ -188,7 +189,7 @@ class _PracticeConfigScreenState extends ConsumerState<PracticeConfigScreen> {
                         ),
                         const SizedBox(height: 8),
                         TextButton(
-                          onPressed: () => _selectAllChapters(chapters as List<ChapterModel>),
+                          onPressed: () => _selectAllChapters(chapters),
                           child: Text(
                             'Select All Chapters',
                             style: AppTextStyles.labelBold.copyWith(color: AppColors.gold),

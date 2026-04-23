@@ -154,7 +154,7 @@ class QuestionCard extends StatelessWidget {
             ),
             if (!isRevealed) ...[
               const SizedBox(height: AppSpacing.xxl),
-              DashedRevealBox(),
+              const DashedRevealBox(),
               const SizedBox(height: AppSpacing.md),
               Center(
                 child: Text(
@@ -174,6 +174,8 @@ class QuestionCard extends StatelessWidget {
 }
 
 class DashedRevealBox extends StatelessWidget {
+  const DashedRevealBox({super.key});
+
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
@@ -780,5 +782,3 @@ class ProgressBottomSheet extends StatelessWidget {
     );
   }
 }
-
-
