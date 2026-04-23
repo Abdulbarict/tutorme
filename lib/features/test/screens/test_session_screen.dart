@@ -4,13 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../models/models.dart';
 import '../../practice/providers/practice_providers.dart';
+import '../../results/providers/result_providers.dart';
 import '../providers/test_providers.dart';
 
 class TestSessionScreen extends ConsumerStatefulWidget {
@@ -184,11 +185,54 @@ class _TestSessionScreenState extends ConsumerState<TestSessionScreen> {
   }
 
   void _submitTest() {
+    final sessionState = ref.read(testSessionProvider);
     ref.read(testSessionProvider.notifier).submitTest();
-    // Simulate save to firestore
-    // context.go('/home/test/result/simulated_result_id');
-    context.pop(); // TEMPORARY for now, day 3 result screen will handle this.
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Test Submitted successfully!')));
+    ref.read(testTimerProvider.notifier).dispose();
+
+    // Build correct-answer map from questions
+    final correctAnswers = <String, int>{};
+    for (final q in sessionState.questions) {
+      correctAnswers[q.id] = q.correctAnswerIndex;
+    }
+
+    // Build selected-answer map (only int answers for MCQ; skip descriptive)
+    final selectedAnswers = <String, int?>{};
+    for (final q in sessionState.questions) {
+      final ans = sessionState.answers[q.id];
+      selectedAnswers[q.id] = ans is int ? ans : null;
+    }
+
+    final correctCount = selectedAnswers.entries
+        .where((e) => e.value != null && e.value == correctAnswers[e.key])
+        .length;
+
+    final result = ResultModel(
+      id: 'local_${DateTime.now().millisecondsSinceEpoch}',
+      userId: '',
+      subjectId: _config.subjectId,
+      chapterId: _config.selectedChapterIds.isNotEmpty
+          ? _config.selectedChapterIds.first
+          : '',
+      questionIds: sessionState.questions.map((q) => q.id).toList(),
+      selectedAnswers: selectedAnswers,
+      correctAnswers: correctAnswers,
+      marksObtained: correctCount,
+      totalMarks: sessionState.questions.length,
+      timeTakenSeconds: 0,
+      completedAt: DateTime.now(),
+      mode: ResultMode.test,
+    );
+
+    ref.read(activeResultProvider.notifier).setResult(
+          result: result,
+          questions: sessionState.questions,
+          subjectName: _config.subjectName,
+          chapterName: _config.selectedChapterIds.isNotEmpty
+              ? _config.selectedChapterIds.first
+              : '',
+        );
+
+    context.go(AppRoutes.testResult(result.id));
   }
 
   void _showPalette() {
