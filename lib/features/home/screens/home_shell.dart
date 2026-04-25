@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/constants/app_routes.dart';
+import '../../../core/widgets/app_offline_banner.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Bottom Navigation Shell
@@ -76,7 +77,18 @@ class _HomeShellState extends State<HomeShell> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: widget.navigationShell,
+      body: Stack(
+        children: [
+          widget.navigationShell,
+          // Offline banner slides in from top on all authenticated screens
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: OfflineBanner(),
+          ),
+        ],
+      ),
       bottomNavigationBar: _BottomNav(
         currentIndex: currentIndex,
         tabs: _tabs,

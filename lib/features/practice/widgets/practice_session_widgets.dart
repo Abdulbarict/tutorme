@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -133,7 +134,10 @@ class QuestionCard extends StatelessWidget {
                           color: AppColors.textSecondary)),
                 ),
                 IconButton(
-                  onPressed: onToggleBookmark,
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    onToggleBookmark();
+                  },
                   icon: Icon(
                     isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                     color: isBookmarked ? AppColors.gold : AppColors.textSecondary,
@@ -440,7 +444,10 @@ class _AssessCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 16),

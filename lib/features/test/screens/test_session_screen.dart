@@ -488,7 +488,10 @@ class _TestSessionScreenState extends ConsumerState<TestSessionScreen> {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: InkWell(
-                                  onTap: () => ref.read(testSessionProvider.notifier).updateAnswer(currentQ.id, optionIndex),
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    ref.read(testSessionProvider.notifier).updateAnswer(currentQ.id, optionIndex);
+                                  },
                                   child: Container(
                                     padding: const EdgeInsets.all(AppSpacing.lg),
                                     decoration: BoxDecoration(
@@ -573,7 +576,10 @@ class _TestSessionScreenState extends ConsumerState<TestSessionScreen> {
                               const SizedBox(width: 12),
                               if (state.isLastQuestion)
                                 ElevatedButton(
-                                  onPressed: _showSubmitDialog,
+                                  onPressed: () {
+                                    HapticFeedback.mediumImpact();
+                                    _showSubmitDialog();
+                                  },
                                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                                   child: const Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                 )

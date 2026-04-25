@@ -2,27 +2,42 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'core/theme/app_theme.dart';
 import 'router/app_router.dart';
+import 'services/cache_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ── Hive local storage ───────────────────────────────────────────────────
-  await Hive.initFlutter();
+  // ── System UI ─────────────────────────────────────────────────────────────
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
 
-  // ── Firebase init ────────────────────────────────────────────────────────
-  // NOTE: options: DefaultFirebaseOptions.currentPlatform is omitted because
-  // firebase_options.dart is a placeholder until `flutterfire configure` is
-  // run. Once the real options file is generated, restore:
-  //   options: DefaultFirebaseOptions.currentPlatform
+  // ── Hive local storage ────────────────────────────────────────────────────
+  await Hive.initFlutter();
+  await CacheService.init();
+
+  // ── Firebase init ─────────────────────────────────────────────────────────
+  // firebase_options.dart is still a stub (run `flutterfire configure` to
+  // generate the real one). Firebase reads config from google-services.json /
+  // GoogleService-Info.plist automatically when no options are passed.
   await Firebase.initializeApp();
 
-  // ── Crashlytics ──────────────────────────────────────────────────────────
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  // ── Global error handlers ─────────────────────────────────────────────────
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+    // Also print in debug mode
+    if (kDebugMode) FlutterError.presentError(details);
+  };
+
   PlatformDispatcher.instance.onError = (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
@@ -44,7 +59,7 @@ class TutorMeApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'TutorMe',
-      debugShowCheckedModeBanner: true,
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: router,
     );

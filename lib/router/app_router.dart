@@ -28,14 +28,51 @@ import '../services/auth_service.dart';
 
 part 'app_router.g.dart';
 
-// ── Root navigator key ────────────────────────────────────────────────────────
+// ── Root navigator key ─────────────────────────────────────────────────────────
 final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+
+// ── Transition helpers ─────────────────────────────────────────────────────────
+
+/// Standard push: slide from right.
+CustomTransitionPage<void> _slideRight(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+) =>
+    CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 280),
+      reverseTransitionDuration: const Duration(milliseconds: 250),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final tween = Tween<Offset>(
+          begin: const Offset(1.0, 0.0),
+          end: Offset.zero,
+        ).chain(CurveTween(curve: Curves.easeInOut));
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+
+/// Modal overlay: fade in.
+CustomTransitionPage<void> _fade(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+) =>
+    CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 220),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+          FadeTransition(opacity: animation, child: child),
+    );
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FIX C5: keepAlive = true prevents GoRouter from being disposed and
-// re-created every time the authStateChanges stream emits. Without this,
-// the full navigation stack is wiped on every auth state change (e.g.,
-// after a token refresh), which is a severe UX regression.
+// re-created every time the authStateChanges stream emits.
 // ─────────────────────────────────────────────────────────────────────────────
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
@@ -49,7 +86,6 @@ GoRouter appRouter(Ref ref) {
       final isLoggedIn = authState.valueOrNull != null;
       final location = state.uri.toString();
 
-      // Paths that never require authentication
       final publicPaths = [
         AppRoutes.splash,
         AppRoutes.onboarding,
@@ -57,107 +93,123 @@ GoRouter appRouter(Ref ref) {
         AppRoutes.signup,
         AppRoutes.levelSelect,
       ];
-
       final isPublic = publicPaths.any((p) => location.startsWith(p));
 
       if (!isLoggedIn && !isPublic) return AppRoutes.login;
 
-      // FIX S1: Also redirect away from /signup and /onboarding while logged-in,
-      // not only /login. Without this a logged-in user can type those URLs and
-      // reach the auth flow, causing duplicate signup / account confusion.
       final authOnlyPaths = [
         AppRoutes.login,
         AppRoutes.signup,
         AppRoutes.onboarding,
       ];
-      if (isLoggedIn && authOnlyPaths.any((p) => location.startsWith(p))) {
+      if (isLoggedIn &&
+          authOnlyPaths.any((p) => location.startsWith(p))) {
         return AppRoutes.home;
       }
 
       return null;
     },
     routes: [
-      // ── Public ──────────────────────────────────────────────────────────
+      // ── Public ────────────────────────────────────────────────────────────
       GoRoute(
         path: AppRoutes.splash,
-        builder: (_, __) => const SplashScreen(),
+        pageBuilder: (ctx, state) =>
+            _fade(ctx, state, const SplashScreen()),
       ),
       GoRoute(
         path: AppRoutes.onboarding,
-        builder: (_, __) => const OnboardingScreen(),
+        pageBuilder: (ctx, state) =>
+            _slideRight(ctx, state, const OnboardingScreen()),
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (_, __) => const LoginScreen(),
+        pageBuilder: (ctx, state) =>
+            _slideRight(ctx, state, const LoginScreen()),
       ),
       GoRoute(
         path: AppRoutes.signup,
-        builder: (_, __) => const SignupScreen(),
+        pageBuilder: (ctx, state) =>
+            _slideRight(ctx, state, const SignupScreen()),
       ),
       GoRoute(
         path: AppRoutes.levelSelect,
-        builder: (_, __) => const LevelSelectionScreen(),
+        pageBuilder: (ctx, state) =>
+            _slideRight(ctx, state, const LevelSelectionScreen()),
       ),
 
-      // ── FIX M1: Full-screen overlays — rendered above the shell ─────────
-      // These are NOT nested inside StatefulShellRoute, so they display
-      // without the bottom navigation bar and do not switch the active tab.
-      // Any screen (Home quick-actions, Profile page) can navigate here
-      // via context.go(AppRoutes.bookmarks) / context.go(AppRoutes.progress).
+      // ── Full-screen overlays (above shell, no bottom nav) ─────────────────
       GoRoute(
         path: AppRoutes.bookmarks,
         parentNavigatorKey: _rootKey,
-        builder: (_, __) => const BookmarksScreen(),
+        pageBuilder: (ctx, state) =>
+            _slideRight(ctx, state, const BookmarksScreen()),
       ),
       GoRoute(
         path: AppRoutes.progress,
         parentNavigatorKey: _rootKey,
-        builder: (_, __) => const ProgressScreen(),
+        pageBuilder: (ctx, state) =>
+            _slideRight(ctx, state, const ProgressScreen()),
       ),
 
-      // ── Authenticated Shell (StatefulShellRoute) ─────────────────────────
+      // ── Authenticated Shell ───────────────────────────────────────────────
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => HomeShell(
-          navigationShell: navigationShell,
-        ),
+        builder: (context, state, navigationShell) =>
+            HomeShell(navigationShell: navigationShell),
         branches: [
-          // ── Tab 0: Home ─────────────────────────────────────────────────
+          // ── Tab 0: Home ──────────────────────────────────────────────────
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: AppRoutes.home,
-                builder: (_, __) => const HomeDashboardScreen(),
+                pageBuilder: (ctx, state) =>
+                    _fade(ctx, state, const HomeDashboardScreen()),
               ),
             ],
           ),
 
-          // ── Tab 1: Subjects ─────────────────────────────────────────────
+          // ── Tab 1: Subjects ──────────────────────────────────────────────
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: AppRoutes.subjects,
-                builder: (_, __) => const SubjectListScreen(),
+                pageBuilder: (ctx, state) =>
+                    _fade(ctx, state, const SubjectListScreen()),
                 routes: [
                   GoRoute(
                     path: ':subjectId/chapters',
-                    builder: (_, state) => ChapterListScreen(
-                      subjectId: state.pathParameters['subjectId']!,
+                    pageBuilder: (ctx, state) => _slideRight(
+                      ctx,
+                      state,
+                      ChapterListScreen(
+                        subjectId: state.pathParameters['subjectId']!,
+                      ),
                     ),
                     routes: [
                       GoRoute(
                         path: ':chapterId/questions',
-                        builder: (_, state) => QuestionListScreen(
-                          subjectId: state.pathParameters['subjectId']!,
-                          chapterId: state.pathParameters['chapterId']!,
+                        pageBuilder: (ctx, state) => _slideRight(
+                          ctx,
+                          state,
+                          QuestionListScreen(
+                            subjectId: state.pathParameters['subjectId']!,
+                            chapterId: state.pathParameters['chapterId']!,
+                          ),
                         ),
                         routes: [
                           GoRoute(
                             path: ':questionId',
                             parentNavigatorKey: _rootKey,
-                            builder: (_, state) => QuestionDetailScreen(
-                              subjectId: state.pathParameters['subjectId']!,
-                              chapterId: state.pathParameters['chapterId']!,
-                              questionId: state.pathParameters['questionId']!,
+                            pageBuilder: (ctx, state) => _slideRight(
+                              ctx,
+                              state,
+                              QuestionDetailScreen(
+                                subjectId:
+                                    state.pathParameters['subjectId']!,
+                                chapterId:
+                                    state.pathParameters['chapterId']!,
+                                questionId:
+                                    state.pathParameters['questionId']!,
+                              ),
                             ),
                           ),
                         ],
@@ -169,17 +221,19 @@ GoRouter appRouter(Ref ref) {
             ],
           ),
 
-          // ── Tab 2: Practice ─────────────────────────────────────────────
+          // ── Tab 2: Practice ──────────────────────────────────────────────
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: AppRoutes.practiceConfig,
-                builder: (_, __) => const PracticeConfigScreen(),
+                pageBuilder: (ctx, state) =>
+                    _fade(ctx, state, const PracticeConfigScreen()),
                 routes: [
                   GoRoute(
                     path: 'session',
                     parentNavigatorKey: _rootKey,
-                    builder: (_, __) => const PracticeSessionScreen(),
+                    pageBuilder: (ctx, state) => _slideRight(
+                        ctx, state, const PracticeSessionScreen()),
                   ),
                 ],
               ),
@@ -191,24 +245,34 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.testConfig,
-                builder: (_, __) => const TestConfigScreen(),
+                pageBuilder: (ctx, state) =>
+                    _fade(ctx, state, const TestConfigScreen()),
                 routes: [
                   GoRoute(
                     path: 'session',
                     parentNavigatorKey: _rootKey,
-                    builder: (_, __) => const TestSessionScreen(),
+                    pageBuilder: (ctx, state) => _slideRight(
+                        ctx, state, const TestSessionScreen()),
                   ),
                   GoRoute(
                     path: 'result/:resultId',
                     parentNavigatorKey: _rootKey,
-                    builder: (_, state) => ResultSummaryScreen(
-                      resultId: state.pathParameters['resultId']!,
+                    pageBuilder: (ctx, state) => _slideRight(
+                      ctx,
+                      state,
+                      ResultSummaryScreen(
+                        resultId: state.pathParameters['resultId']!,
+                      ),
                     ),
                     routes: [
                       GoRoute(
                         path: 'review',
-                        builder: (_, state) => AnswerReviewScreen(
-                          resultId: state.pathParameters['resultId']!,
+                        pageBuilder: (ctx, state) => _slideRight(
+                          ctx,
+                          state,
+                          AnswerReviewScreen(
+                            resultId: state.pathParameters['resultId']!,
+                          ),
                         ),
                       ),
                     ],
@@ -218,14 +282,13 @@ GoRouter appRouter(Ref ref) {
             ],
           ),
 
-          // ── Tab 4: Profile ──────────────────────────────────────
-          // Bookmarks and progress are now root-level routes (above) so
-          // navigating to them from any tab does not switch to profile.
+          // ── Tab 4: Profile ───────────────────────────────────────────────
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: AppRoutes.profile,
-                builder: (_, __) => const ProfileScreen(),
+                pageBuilder: (ctx, state) =>
+                    _fade(ctx, state, const ProfileScreen()),
               ),
             ],
           ),

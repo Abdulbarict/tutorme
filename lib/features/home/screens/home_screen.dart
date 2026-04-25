@@ -8,6 +8,7 @@ import '../../../core/constants/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_animations.dart';
 import '../../../models/models.dart';
 import '../providers/home_providers.dart';
 
@@ -64,10 +65,15 @@ class HomeDashboardScreen extends ConsumerWidget {
                 error: (_, __) => const SizedBox.shrink(),
                 data: (stats) => Column(
                   children: [
-                    _HeroStatsCard(stats: stats),
-                    _StreakBanner(
-                      streak: stats.streak,
-                      bestStreak: stats.bestStreak,
+                    FadeInUp(
+                      duration: const Duration(milliseconds: 400),
+                      child: _HeroStatsCard(stats: stats),
+                    ),
+                    StreakShimmer(
+                      child: _StreakBanner(
+                        streak: stats.streak,
+                        bestStreak: stats.bestStreak,
+                      ),
                     ),
                   ],
                 ),

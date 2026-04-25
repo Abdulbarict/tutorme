@@ -836,5 +836,291 @@ final userProfileProvider = AutoDisposeStreamProvider<UserModel?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef UserProfileRef = AutoDisposeStreamProviderRef<UserModel?>;
+String _$userResultsHash() => r'd96f67cbe6fc9a820e09b4cb59e6eb6c3425df0d';
+
+/// Stream of the current user's last 20 results
+///
+/// Copied from [userResults].
+@ProviderFor(userResults)
+const userResultsProvider = UserResultsFamily();
+
+/// Stream of the current user's last 20 results
+///
+/// Copied from [userResults].
+class UserResultsFamily extends Family<AsyncValue<List<ResultModel>>> {
+  /// Stream of the current user's last 20 results
+  ///
+  /// Copied from [userResults].
+  const UserResultsFamily();
+
+  /// Stream of the current user's last 20 results
+  ///
+  /// Copied from [userResults].
+  UserResultsProvider call(
+    String uid,
+  ) {
+    return UserResultsProvider(
+      uid,
+    );
+  }
+
+  @override
+  UserResultsProvider getProviderOverride(
+    covariant UserResultsProvider provider,
+  ) {
+    return call(
+      provider.uid,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'userResultsProvider';
+}
+
+/// Stream of the current user's last 20 results
+///
+/// Copied from [userResults].
+class UserResultsProvider extends AutoDisposeStreamProvider<List<ResultModel>> {
+  /// Stream of the current user's last 20 results
+  ///
+  /// Copied from [userResults].
+  UserResultsProvider(
+    String uid,
+  ) : this._internal(
+          (ref) => userResults(
+            ref as UserResultsRef,
+            uid,
+          ),
+          from: userResultsProvider,
+          name: r'userResultsProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$userResultsHash,
+          dependencies: UserResultsFamily._dependencies,
+          allTransitiveDependencies:
+              UserResultsFamily._allTransitiveDependencies,
+          uid: uid,
+        );
+
+  UserResultsProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.uid,
+  }) : super.internal();
+
+  final String uid;
+
+  @override
+  Override overrideWith(
+    Stream<List<ResultModel>> Function(UserResultsRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: UserResultsProvider._internal(
+        (ref) => create(ref as UserResultsRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        uid: uid,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeStreamProviderElement<List<ResultModel>> createElement() {
+    return _UserResultsProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UserResultsProvider && other.uid == uid;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, uid.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin UserResultsRef on AutoDisposeStreamProviderRef<List<ResultModel>> {
+  /// The parameter `uid` of this provider.
+  String get uid;
+}
+
+class _UserResultsProviderElement
+    extends AutoDisposeStreamProviderElement<List<ResultModel>>
+    with UserResultsRef {
+  _UserResultsProviderElement(super.provider);
+
+  @override
+  String get uid => (origin as UserResultsProvider).uid;
+}
+
+String _$weeklyStatsHash() => r'747808e30b4b01158244fcab5b38dccdee7b2c4d';
+
+/// Fetch weekly stats map
+///
+/// Copied from [weeklyStats].
+@ProviderFor(weeklyStats)
+const weeklyStatsProvider = WeeklyStatsFamily();
+
+/// Fetch weekly stats map
+///
+/// Copied from [weeklyStats].
+class WeeklyStatsFamily extends Family<AsyncValue<Map<String, dynamic>>> {
+  /// Fetch weekly stats map
+  ///
+  /// Copied from [weeklyStats].
+  const WeeklyStatsFamily();
+
+  /// Fetch weekly stats map
+  ///
+  /// Copied from [weeklyStats].
+  WeeklyStatsProvider call(
+    String uid,
+  ) {
+    return WeeklyStatsProvider(
+      uid,
+    );
+  }
+
+  @override
+  WeeklyStatsProvider getProviderOverride(
+    covariant WeeklyStatsProvider provider,
+  ) {
+    return call(
+      provider.uid,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'weeklyStatsProvider';
+}
+
+/// Fetch weekly stats map
+///
+/// Copied from [weeklyStats].
+class WeeklyStatsProvider
+    extends AutoDisposeFutureProvider<Map<String, dynamic>> {
+  /// Fetch weekly stats map
+  ///
+  /// Copied from [weeklyStats].
+  WeeklyStatsProvider(
+    String uid,
+  ) : this._internal(
+          (ref) => weeklyStats(
+            ref as WeeklyStatsRef,
+            uid,
+          ),
+          from: weeklyStatsProvider,
+          name: r'weeklyStatsProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$weeklyStatsHash,
+          dependencies: WeeklyStatsFamily._dependencies,
+          allTransitiveDependencies:
+              WeeklyStatsFamily._allTransitiveDependencies,
+          uid: uid,
+        );
+
+  WeeklyStatsProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.uid,
+  }) : super.internal();
+
+  final String uid;
+
+  @override
+  Override overrideWith(
+    FutureOr<Map<String, dynamic>> Function(WeeklyStatsRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: WeeklyStatsProvider._internal(
+        (ref) => create(ref as WeeklyStatsRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        uid: uid,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<Map<String, dynamic>> createElement() {
+    return _WeeklyStatsProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is WeeklyStatsProvider && other.uid == uid;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, uid.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin WeeklyStatsRef on AutoDisposeFutureProviderRef<Map<String, dynamic>> {
+  /// The parameter `uid` of this provider.
+  String get uid;
+}
+
+class _WeeklyStatsProviderElement
+    extends AutoDisposeFutureProviderElement<Map<String, dynamic>>
+    with WeeklyStatsRef {
+  _WeeklyStatsProviderElement(super.provider);
+
+  @override
+  String get uid => (origin as WeeklyStatsProvider).uid;
+}
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

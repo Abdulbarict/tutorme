@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../models/models.dart';
 import '../../practice/providers/practice_providers.dart';
@@ -20,7 +19,7 @@ class TestConfigScreen extends ConsumerStatefulWidget {
 
 class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
   SubjectModel? _selectedSubject;
-  Set<String> _selectedChapterIds = {};
+  final Set<String> _selectedChapterIds = {};
   int? _questionCount = 10;
   final TextEditingController _customCountController = TextEditingController();
   
@@ -133,7 +132,7 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
             const SizedBox(height: 8),
             subjectsAsync.when(
               data: (subjects) => DropdownButtonFormField<SubjectModel>(
-                value: _selectedSubject,
+                initialValue: _selectedSubject,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: AppColors.surface,
@@ -180,7 +179,7 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
                       child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: (chapters as List<ChapterModel>).map((c) {
+                        children: chapters.map((c) {
                           final isSelected = _selectedChapterIds.contains(c.id);
                           return FilterChip(
                             label: Text(c.name),
@@ -262,30 +261,42 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Radio<TimerMode>(
-                            value: TimerMode.perQuestion,
-                            groupValue: _timerMode,
-                            onChanged: (val) => setState(() {
-                              if (val != null) _timerMode = val;
-                              _timeValue = 1.5;
-                            }),
-                            activeColor: AppColors.navy,
-                          ),
-                          Text('Per Question', style: AppTextStyles.bodyMedium),
-                          const SizedBox(width: 16),
-                          Radio<TimerMode>(
-                            value: TimerMode.totalTime,
-                            groupValue: _timerMode,
-                            onChanged: (val) => setState(() {
-                              if (val != null) _timerMode = val;
-                              _timeValue = 30; // 30 min default total time
-                            }),
-                            activeColor: AppColors.navy,
-                          ),
-                          Text('Total Time', style: AppTextStyles.bodyMedium),
-                        ],
+                      // RadioGroup manages groupValue for the child Radio widgets
+                      RadioGroup<TimerMode>(
+                        groupValue: _timerMode,
+                        onChanged: (val) {
+                          if (val == null) return;
+                          setState(() {
+                            _timerMode = val;
+                            _timeValue =
+                                val == TimerMode.perQuestion ? 1.5 : 30;
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            Radio<TimerMode>(
+                              value: TimerMode.perQuestion,
+                              fillColor: WidgetStateProperty.resolveWith(
+                                (s) => s.contains(WidgetState.selected)
+                                    ? AppColors.navy
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                            Text('Per Question',
+                                style: AppTextStyles.bodyMedium),
+                            const SizedBox(width: 16),
+                            Radio<TimerMode>(
+                              value: TimerMode.totalTime,
+                              fillColor: WidgetStateProperty.resolveWith(
+                                (s) => s.contains(WidgetState.selected)
+                                    ? AppColors.navy
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                            Text('Total Time',
+                                style: AppTextStyles.bodyMedium),
+                          ],
+                        ),
                       ),
                       Row(
                         children: [

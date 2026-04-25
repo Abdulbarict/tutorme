@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import '../models/models.dart';
 import 'auth_service.dart';
 
@@ -40,20 +41,15 @@ class FirestoreService {
   CollectionReference<Map<String, dynamic>> get _results =>
       _db.collection('results');
 
-  // ── Subjects ──────────────────────────────────────────────────────────────
+  CollectionReference<Map<String, dynamic>> _selfAssessments(String uid) =>
+      _db.collection('users').doc(uid).collection('selfAssessments');
 
-  // ── FIX S9: Composite index requirement ─────────────────────────────────
-  // The two queries below use WHERE + ORDER BY on separate fields, which
-  // requires a Firestore composite index that is NOT created automatically.
-  // Without it, the first run on a real project will produce:
-  //   [cloud_firestore/failed-precondition] The query requires an index.
+  // ── Subjects ──────────────────────────────────────────────────────────────
   //
-  // Required indexes (see firestore.indexes.json at the project root):
+  // NOTE: Composite indexes required for WHERE + ORDER BY on separate fields.
   //   Collection: subjects  → fields: level ASC, order ASC
   //   Collection: chapters  → fields: subjectId ASC, order ASC
-  //
   // Deploy: firebase deploy --only firestore:indexes
-  // ─────────────────────────────────────────────────────────────────────────
 
   /// Fetch ordered subjects for a given [level].
   Future<List<SubjectModel>> getSubjects(CmaLevel level) async {
@@ -61,9 +57,7 @@ class FirestoreService {
         .where('level', isEqualTo: level.firestoreValue)
         .orderBy('order')
         .get();
-    return snap.docs
-        .map((d) => SubjectModel.fromFirestore(d))
-        .toList();
+    return snap.docs.map((d) => SubjectModel.fromFirestore(d)).toList();
   }
 
   /// Real-time stream of subjects (useful for home screen).
@@ -84,11 +78,8 @@ class FirestoreService {
   // ── Chapters ──────────────────────────────────────────────────────────────
 
   Future<List<ChapterModel>> getChapters(String subjectId) async {
-    final snap =
-        await _chapters(subjectId).orderBy('order').get();
-    return snap.docs
-        .map((d) => ChapterModel.fromFirestore(d))
-        .toList();
+    final snap = await _chapters(subjectId).orderBy('order').get();
+    return snap.docs.map((d) => ChapterModel.fromFirestore(d)).toList();
   }
 
   Stream<List<ChapterModel>> watchChapters(String subjectId) =>
@@ -120,9 +111,7 @@ class FirestoreService {
     }
 
     final snap = await query.limit(limit).get();
-    return snap.docs
-        .map((d) => QuestionModel.fromFirestore(d))
-        .toList();
+    return snap.docs.map((d) => QuestionModel.fromFirestore(d)).toList();
   }
 
   Future<QuestionModel> getQuestion(
@@ -135,28 +124,14 @@ class FirestoreService {
     return QuestionModel.fromFirestore(doc);
   }
 
-  // ── Results ───────────────────────────────────────────────────────────────
-
-  Future<String> saveResult(ResultModel result) async {
-    final ref = _results.doc();
-    await ref.set({...result.toMap(), 'userId': _uid});
-    return ref.id;
-  }
-
-  Future<List<ResultModel>> getUserResults({int limit = 20}) async {
-    if (_uid == null) return [];
-    final snap = await _results
-        .where('userId', isEqualTo: _uid)
-        .orderBy('completedAt', descending: true)
-        .limit(limit)
-        .get();
-    return snap.docs.map((d) => ResultModel.fromFirestore(d)).toList();
-  }
-
-  Future<ResultModel?> getResult(String resultId) async {
-    final doc = await _results.doc(resultId).get();
-    if (!doc.exists) return null;
-    return ResultModel.fromFirestore(doc);
+  /// Fetch multiple questions by their IDs (fan-out then collect).
+  Future<List<QuestionModel>> getQuestionsByIds(
+      String subjectId, String chapterId, List<String> ids) async {
+    if (ids.isEmpty) return [];
+    final futures = ids
+        .map((id) => getQuestion(subjectId, chapterId, id))
+        .toList();
+    return Future.wait(futures);
   }
 
   // ── User Progress ─────────────────────────────────────────────────────────
@@ -176,6 +151,102 @@ class FirestoreService {
         .snapshots()
         .map((doc) => doc.exists ? UserModel.fromFirestore(doc) : null);
   }
+
+  /// Overwrite the user's bookmarked question IDs.
+  Future<void> updateBookmarks(String uid, List<String> questionIds) =>
+      _users.doc(uid).update({'bookmarkedQuestionIds': questionIds});
+
+  /// Overwrite the user's practiced question IDs.
+  Future<void> updatePracticedQuestions(
+          String uid, List<String> questionIds) =>
+      _users.doc(uid).update({'practicedQuestionIds': questionIds});
+
+  /// Save a self-assessment for one question in the subcollection
+  /// `users/{uid}/selfAssessments/{questionId}`.
+  Future<void> saveSelfAssessment(
+    String uid,
+    String questionId,
+    String assessment, // 'gotIt' | 'needReview'
+  ) =>
+      _selfAssessments(uid).doc(questionId).set({
+        'assessment': assessment,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+  /// Fetch all self-assessments for the current user.
+  Future<Map<String, String>> getSelfAssessments(String uid) async {
+    final snap = await _selfAssessments(uid).get();
+    return {
+      for (final doc in snap.docs)
+        doc.id: (doc.data()['assessment'] as String?) ?? '',
+    };
+  }
+
+  // ── Results ───────────────────────────────────────────────────────────────
+
+  /// Persist a test result and return the generated document ID.
+  Future<String> saveResult(ResultModel result) async {
+    final ref = _results.doc();
+    await ref.set({...result.toMap(), 'userId': _uid});
+    return ref.id;
+  }
+
+  /// Real-time stream of the last 20 results for the current user.
+  Stream<List<ResultModel>> getUserResults(String uid) =>
+      _results
+          .where('userId', isEqualTo: uid)
+          .orderBy('completedAt', descending: true)
+          .limit(20)
+          .snapshots()
+          .map((snap) =>
+              snap.docs.map((d) => ResultModel.fromFirestore(d)).toList());
+
+  /// Fetch a single result by document ID.
+  Future<ResultModel?> getResult(String resultId) async {
+    final doc = await _results.doc(resultId).get();
+    if (!doc.exists) return null;
+    return ResultModel.fromFirestore(doc);
+  }
+
+  // ── Stats Aggregation ─────────────────────────────────────────────────────
+
+  /// Compute weekly stats from the last 7 days of results.
+  Future<Map<String, dynamic>> getWeeklyStats(String uid) async {
+    final since = DateTime.now().subtract(const Duration(days: 7));
+    final snap = await _results
+        .where('userId', isEqualTo: uid)
+        .where('completedAt',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(since))
+        .get();
+
+    final results =
+        snap.docs.map((d) => ResultModel.fromFirestore(d)).toList();
+
+    final testsThisWeek = results.length;
+
+    final practicedSet = <String>{};
+    for (final r in results) {
+      practicedSet.addAll(r.questionIds);
+    }
+
+    final totalAccuracy = results.isEmpty
+        ? 0.0
+        : results.map((r) => r.accuracy).reduce((a, b) => a + b) /
+            results.length;
+
+    // Fetch saved FCM token etc.
+    return {
+      'questionsThisWeek': practicedSet.length,
+      'testsThisWeek': testsThisWeek,
+      'avgAccuracy': totalAccuracy,
+    };
+  }
+
+  // ── FCM Token ─────────────────────────────────────────────────────────────
+
+  /// Persist the user's FCM push token to Firestore.
+  Future<void> saveFcmToken(String uid, String token) =>
+      _users.doc(uid).set({'fcmToken': token}, SetOptions(merge: true));
 }
 
 // ── Providers ─────────────────────────────────────────────────────────────────
@@ -229,3 +300,13 @@ Future<QuestionModel> question(
 @riverpod
 Stream<UserModel?> userProfile(Ref ref) =>
     ref.watch(firestoreServiceProvider).watchUserProfile();
+
+/// Stream of the current user's last 20 results
+@riverpod
+Stream<List<ResultModel>> userResults(Ref ref, String uid) =>
+    ref.watch(firestoreServiceProvider).getUserResults(uid);
+
+/// Fetch weekly stats map
+@riverpod
+Future<Map<String, dynamic>> weeklyStats(Ref ref, String uid) =>
+    ref.watch(firestoreServiceProvider).getWeeklyStats(uid);
